@@ -124,7 +124,7 @@ async function writeAndWait(client: ReturnType<typeof createClient>, account: `0
 
   const RETRYABLE = ["LEADER_TIMEOUT", "PENDING", "PROPOSING", "WAITING", "COMMITTING", "REVEALING"];
 
-  for (let attempt = 0; attempt < 150; attempt++) {
+  for (let attempt = 0; attempt < 60; attempt++) {
     try {
       const receipt = await (client as any).waitForTransactionReceipt({
         hash: txHash,
@@ -199,9 +199,10 @@ async function writeSubmit(fn: string, params: {
       }) as string;
       if (errMsg) throw new Error(errMsg);
     } catch (e: any) {
-      // get_last_error failing (RPC blip) → keep polling
       if (e?.message?.startsWith("Transaction accepted")) throw e;
-      continue;
+      const msg = e?.message || "";
+      if (msg.includes("contract") || msg.includes("revert") || msg.includes("readContract")) continue;
+      throw e;  // real LLM error from contract → surface to user
     }
 
     // check if the case appeared

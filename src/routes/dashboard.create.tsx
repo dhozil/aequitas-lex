@@ -51,8 +51,7 @@ function CreatePage() {
         images,
       });
       toast.success(isContractConfigured() ? "Case submitted on-chain" : "Case recorded locally");
-      const caseId = "case_id" in result ? (result as any).case_id : crypto.randomUUID();
-      nav({ to: "/dashboard/cases/$id", params: { id: caseId } });
+      nav({ to: "/dashboard/cases" });
     } catch (err: any) {
       toast.error(err?.message || "Failed to submit case");
     } finally {
