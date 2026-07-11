@@ -172,14 +172,27 @@ npm run preview
 
 ## Deployment
 
-Build untuk Cloudflare Pages:
+### Via GitHub Integration
+
+Di dashboard Cloudflare Pages → "Create a project" → hubungkan repo `dhozil/aequitas-lex`:
+
+| Setting | Value |
+|---------|-------|
+| Build command | `npm run build` |
+| Build output directory | **`dist`** |
+
+Set environment variables:
+
+### Via CLI
 
 ```bash
 npm run build
-npx wrangler pages deploy .output/public
+npx wrangler pages deploy dist/
 ```
 
-Set environment variable di dashboard Cloudflare Pages:
+### Environment Variables
+
+Set di dashboard Cloudflare Pages:
 
 | Key | Value |
 |-----|-------|
