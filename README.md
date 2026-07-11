@@ -165,7 +165,7 @@ npm run preview
 
 2. Set contract address in `.env`:
    ```
-   VITE_AEQUITAS_CONTRACT=0x51746305510c31D91F8D397cD70d6599696471E9
+   VITE_AEQUITAS_CONTRACT=0x10d7c33c3709dDd5f701C34b960C0d099F0Ca32d
    ```
 
 ---
@@ -196,7 +196,7 @@ Set di dashboard Cloudflare Pages:
 
 | Key | Value |
 |-----|-------|
-| `VITE_AEQUITAS_CONTRACT` | `0x51746305510c31D91F8D397cD70d6599696471E9` |
+| `VITE_AEQUITAS_CONTRACT` | `0x10d7c33c3709dDd5f701C34b960C0d099F0Ca32d` |
 
 ---
 
