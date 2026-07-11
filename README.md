@@ -1,161 +1,199 @@
 # Aequitas Lex
 
-> **Justice Through Intelligent Reasoning**
+> **Justice Through Intelligent Reasoning** — AI-powered legal severity assessment on GenLayer.
 
-Aequitas Lex adalah platform asesmen kasus hukum berbasis AI dengan estetika premium (matte black, gold, dan marble). Platform ini mensimulasikan alur kerja *Intelligent Contract* — mulai dari pengajuan kasus, analisis AI, konsensus multi-validator, hingga pencatatan metadata on-chain yang transparan.
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.8-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=white)](https://react.dev/)
+[![TanStack Start](https://img.shields.io/badge/TanStack_Start-1-FF4154?logo=reactquery&logoColor=white)](https://tanstack.com/start/latest)
+[![GenLayer](https://img.shields.io/badge/GenLayer-Bradbury-7B3FE4?logo=genlayer&logoColor=white)](https://genlayer.com/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4-06B6D4?logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
+[![Cloudflare Pages](https://img.shields.io/badge/Cloudflare_Pages-F38020?logo=cloudflarepages&logoColor=white)](https://pages.cloudflare.com/)
 
-> **Catatan penting:** Aequitas Lex **tidak** menentukan kesalahan atau mengeluarkan putusan hukum. Sistem ini hanya memberikan rekomendasi tingkat keparahan (*severity*) yang dapat dijelaskan dan dapat diaudit untuk membantu penyidik, analis, dan badan administratif.
+Aequitas Lex adalah platform asesmen keparahan kasus hukum yang menggunakan **GenLayer Intelligent Contracts** dengan AI-validator consensus. Setiap kasus dianalisis oleh LLM secara independen oleh leader dan validator, lalu mencapai konsensus melalui **Equivalence Principle** (`run_nondet_unsafe`).
 
----
-
-## Daftar Isi
-
-- [Fitur Utama](#fitur-utama)
-- [Stack Teknologi](#stack-teknologi)
-- [Struktur Project](#struktur-project)
-- [Halaman & Alur](#halaman--alur)
-- [Cara Menjalankan](#cara-menjalankan)
-- [Konsep & Model](#konsep--model)
-- [Catatan Teknis](#catatan-teknis)
+Platform ini hanya memberikan rekomendasi tingkat keparahan (*severity*) yang dapat dijelaskan dan diaudit — bukan putusan hukum atau penentuan kesalahan.
 
 ---
 
-## Fitur Utama
+## Features
 
-- **Landing Page** — Hero visual, penjelasan nilai, alur kerja, dan FAQ.
-- **Dashboard** — Ringkasan statistik kasus, distribusi kategori, dan kasus terbaru.
-- **Create Case** — Formulir pengajuan kasus dengan judul, deskripsi, kategori, estimasi kerugian, lokasi, dan hingga 5 gambar bukti.
-- **Case Ledger** — Daftar kasus yang dapat dicari dan disaring berdasarkan kategori/tingkat keparahan.
-- **Case Detail** — Tampilan mendalam analisis AI, pernyataan setiap validator, konsensus, serta metadata hash & transaksi.
-- **Severity History** — Timeline grafik perkembangan skor keparahan kasus.
-- **Profile** — Identitas pengguna (display name, role, jurisdiction) dan simulasi wallet connection.
-- **Documentation** — Dokumentasi arsitektur, model keparahan, dan jaminan transparansi.
-
----
-
-## Stack Teknologi
-
-- **Framework:** TanStack Start v1 + React 19
-- **Routing:** TanStack Router (file-based)
-- **Styling:** Tailwind CSS v4 + CSS custom properties
-- **State & UI:** React, TanStack Query, shadcn/ui components, Sonner toast
-- **Ikon:** Lucide React
-- **Storage:** `localStorage` untuk persistensi kasus, profil, dan wallet
+- **Landing Page** — Hero visual, nilai platform, alur kerja, FAQ.
+- **Dashboard** — Overview statistik, distribusi kategori, kasus terbaru.
+- **Create Case** — Formulir pengajuan dengan analisis AI via GenLayer consensus.
+- **Case Ledger** — Daftar kasus dengan filter/search.
+- **Case Detail** — Overlay analisis AI, reasoning, validator consensus, on-chain metadata.
+- **Severity History** — Timeline grafik skor keparahan.
+- **Profile** — Identitas pengguna dengan koneksi wallet (EIP-1193).
 
 ---
 
-## Struktur Project
+## Stack
 
-```text
-src/
-├── components/
-│   ├── ui/                # shadcn/ui components
-│   ├── gold-particles.tsx # Efek partikel emas di latar
-│   ├── severity-badge.tsx # Badge tingkat keparahan
-│   └── site-header.tsx    # Header navigasi
-├── lib/
-│   ├── cases.ts           # Logika analisis, tipe data, localStorage
-│   └── utils.ts           # Utility umum
-├── routes/
-│   ├── __root.tsx         # Root layout
-│   ├── index.tsx          # Landing page
-│   ├── docs.tsx           # Dokumentasi
-│   ├── dashboard.tsx      # Layout dashboard
-│   ├── dashboard.index.tsx       # Overview dashboard
-│   ├── dashboard.create.tsx      # Buat kasus baru
-│   ├── dashboard.cases.tsx       # Daftar kasus
-│   ├── dashboard.cases.$id.tsx   # Detail kasus
-│   ├── dashboard.history.tsx     # Riwayat severity
-│   └── dashboard.profile.tsx     # Profil pengguna
-├── styles.css             # Tema premium Aequitas Lex
-└── router.tsx             # Bootstrap router
+| Layer | Technology |
+|-------|-----------|
+| **Framework** | TanStack Start v1 + React 19 |
+| **Routing** | TanStack Router (file-based) |
+| **Styling** | Tailwind CSS v4 + OKLCH custom properties |
+| **AI Consensus** | GenLayer – `run_nondet_unsafe` + `exec_prompt` |
+| **Blockchain** | GenLayer Bradbury testnet (chain: 4221) |
+| **Wallet** | EIP-1193 (any EVM wallet) |
+| **UI** | shadcn/ui, Sonner, Lucide, Recharts |
+| **Deploy** | Cloudflare Pages (via Nitro preset `cloudflare-pages`) |
+
+---
+
+## Project Structure
+
+```
+aequitas-lex/
+├── contracts/
+│   └── AequitasLex.py          # GenLayer Intelligent Contract
+├── public/
+│   └── favicon.svg
+├── scripts/
+│   └── check-schema.mjs        # Contract schema inspection
+├── src/
+│   ├── components/
+│   │   ├── ui/                 # shadcn/ui components
+│   │   ├── severity-badge.tsx
+│   │   ├── site-header.tsx
+│   │   └── gold-particles.tsx
+│   ├── lib/
+│   │   ├── genlayer-client.ts  # GenLayer chain interactions
+│   │   ├── genlayer-service.ts # Bridge service (chain + localStorage fallback)
+│   │   ├── cases.ts            # Analysis logic, types, local mock
+│   │   ├── error-capture.ts    # SSR error capture
+│   │   ├── error-page.ts       # Fallback error page
+│   │   └── utils.ts
+│   ├── routes/
+│   │   ├── __root.tsx
+│   │   ├── index.tsx           # Landing page
+│   │   ├── docs.tsx            # Documentation
+│   │   ├── dashboard.tsx       # Dashboard layout
+│   │   ├── dashboard.index.tsx # Overview
+│   │   ├── dashboard.create.tsx # Create case
+│   │   ├── dashboard.cases.tsx # Case ledger (inline detail overlay)
+│   │   ├── dashboard.cases.$id.tsx
+│   │   ├── dashboard.history.tsx
+│   │   └── dashboard.profile.tsx
+│   ├── styles.css              # Premium theme (onyx, gold, marble)
+│   ├── server.ts               # Cloudflare Workers entry
+│   ├── start.ts                # TanStack Start config
+│   └── router.tsx
+├── .env                        # VITE_AEQUITAS_CONTRACT
+├── vite.config.ts
+├── tsconfig.json
+└── package.json
 ```
 
 ---
 
-## Halaman & Alur
+## The Intelligent Contract
 
-| Halaman | URL | Deskripsi |
-|---------|-----|-----------|
-| Beranda | `/` | Hero, fitur, how it works, FAQ |
-| Dokumentasi | `/docs` | Referensi arsitektur & severity model |
-| Dashboard | `/dashboard` | Layout navigasi utama |
-| Overview | `/dashboard/` | Statistik & ringkasan |
-| Create Case | `/dashboard/create` | Formulir pengajuan kasus + analisis AI |
-| Case Ledger | `/dashboard/cases` | Tabel/listing seluruh kasus |
-| Case Detail | `/dashboard/cases/:id` | Analisis mendalam & metadata |
-| Severity History | `/dashboard/history` | Grafik timeline skor |
-| Profile | `/dashboard/profile` | Identitas & wallet |
+**`contracts/AequitasLex.py`** — deployed on GenLayer Bradbury testnet.
+
+### Consensus Flow
+
+```
+      ┌──────────────┐
+      │  Case Data   │
+      └──────┬───────┘
+             ▼
+     ┌───────────────┐
+     │  Leader (LLM) │  ← gl.nondet.exec_prompt (analysis + severity)
+     └───────┬───────┘
+             ▼
+     ┌───────────────┐
+     │  Validators   │  ← 3 independent LLM re-runs
+     │  (x3)         │  ← score_diff ≤ 5, conf_diff ≤ 10,
+     └───────┬───────┘     ev_diff ≤ 15
+             ▼
+     ┌───────────────┐
+     │  Storage      │  ← Only written after consensus
+     └───────────────┘
+```
+
+- **Write methods never raise** — errors disimpan di `last_error[fn]`, dibaca via `get_last_error(fn)`.
+- **No silent deterministic fallback** — jika LLM consensus gagal, error disimpan dan disurface ke user.
+- **Validator** independently re-run `exec_prompt`, bukan cek struktur JSON leader.
+- **Themes**: [Equivalence Principle](https://docs.genlayer.com/developers/intelligent-contracts/equivalence-principle) — Pattern 2: Numeric Tolerance.
+
+### Severity Model
+
+| Level | Score Range |
+|-------|------------|
+| Low | 0–37 |
+| Medium | 38–61 |
+| High | 62–81 |
+| Critical | 82–100 |
+
+### Validator Lenses
+
+| Validator | Focus |
+|-----------|-------|
+| **Solon** | Procedural evidence weight & chain-of-custody rigor |
+| **Cicero** | Harm magnitude, victim impact, and intent signals |
+| **Ulpian** | Precedent alignment, jurisdictional norms, legal proportionality |
 
 ---
 
-## Cara Menjalankan
+## Getting Started
 
-1. **Install dependensi**
+**Prerequisites:** Node.js 20+, npm, wallet (MetaMask or any EIP-1193).
 
 ```bash
-bun install
+# Install dependencies
+npm install
+
+# Start development server
+npm run dev
+
+# Build for production
+npm run build
+
+# Preview production build
+npm run preview
 ```
 
-2. **Jalankan mode pengembangan**
+### Connect to Bradbury
 
-```bash
-bun run dev
-```
+1. Add network to wallet:
+   - **Network:** Bradbury
+   - **RPC:** `https://bradbury.genlayer.org/`
+   - **Chain ID:** `4221` (hex: `0x107D`)
+   - **Currency:** GEN
 
-3. **Build untuk production**
-
-```bash
-bun run build
-```
-
-4. **Preview production build**
-
-```bash
-bun run preview
-```
+2. Set contract address in `.env`:
+   ```
+   VITE_AEQUITAS_CONTRACT=0x51746305510c31D91F8D397cD70d6599696471E9
+   ```
 
 ---
 
-## Konsep & Model
+## Deployment
 
-### AI Reasoning
+Build untuk Cloudflare Pages:
 
-Setiap kasus dianalisis berdasarkan:
+```bash
+npm run build
+npx wrangler pages deploy .output/public
+```
 
-- Summary dan Key Facts
-- Evidence Consistency
-- Risk Indicators
-- Financial Impact
-- Public Impact
-- Confidence Score
+Set environment variable di dashboard Cloudflare Pages:
 
-### Validator
-
-Tiga validator independen mensimulasikan perspektif berbeda:
-
-- **Solon** — Bobot bukti prosedural
-- **Cicero** — Besar kecil kerugian dan indikasi niat
-- **Ulpian** — Kesesuaian preseden dan norma yurisdiksi
-
-### Model Severity
-
-| Tingkat | Rentang Skor | Keterangan |
-|---------|--------------|------------|
-| Low | 0–37 | Dampak ringan, risiko rendah |
-| Medium | 38–61 | Dampak sedang, kerugian terlihat |
-| High | 62–81 | Dampak signifikan, kerugian serius |
-| Critical | 82–100 | Dampak berat, risiko ekstrem |
+| Key | Value |
+|-----|-------|
+| `VITE_AEQUITAS_CONTRACT` | `0x51746305510c31D91F8D397cD70d6599696471E9` |
 
 ---
 
-## Catatan Teknis
+## Design
 
-- Semua data kasus disimpan secara lokal di `localStorage`.
-- Wallet address adalah simulasi deterministik; tidak terhubung ke blockchain nyata.
-- Hash dan transaksi hash pada metadata adalah simulasi untuk menunjukkan transparansi on-chain.
-- Tema visual menggunakan palet warna OKLCH (`--gold`, `--marble`, `--onyx`) dengan efek blur, gradien, dan animasi partikel.
+- **Palette:** OKLCH — gold (`oklch(0.88 0.09 85)`), marble (`oklch(0.92 0.01 85)`), onyx (`oklch(0.15 0.01 85)`)
+- **Typography:** serif headings, sans-serif body (system stack)
+- **Effects:** backdrop blur, glassmorphism panels, animated gold particles
+- **Philosophy:** Modern classic — clean, restrained, premium.
 
 ---
 
-Dibuat untuk ekosistem GenLayer Intelligent Contracts — tampilan, alur, dan estetika disesuaikan dengan visi project yang dilampirkan.
+Built for GenLayer Intelligent Contracts.
