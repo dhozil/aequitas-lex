@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <defs>
+    <linearGradient id="gold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#e8c568"/>
+      <stop offset="50%" stop-color="#d4a843"/>
+      <stop offset="100%" stop-color="#c1902e"/>
+    </linearGradient>
+  </defs>
+  <!-- Base -->
+  <polygon points="35,85 65,85 70,95 30,95" fill="url(#gold)" opacity="0.6"/>
+  <!-- Post -->
+  <rect x="46" y="30" width="8" height="55" rx="3" fill="url(#gold)"/>
+  <!-- Beam -->
+  <rect x="10" y="25" width="80" height="8" rx="4" fill="url(#gold)"/>
+  <!-- Left chain -->
+  <line x1="22" y1="33" x2="22" y2="55" stroke="url(#gold)" stroke-width="2" opacity="0.7"/>
+  <!-- Right chain -->
+  <line x1="78" y1="33" x2="78" y2="55" stroke="url(#gold)" stroke-width="2" opacity="0.7"/>
+  <!-- Center pivot -->
+  <circle cx="50" cy="29" r="5" fill="url(#gold)"/>
+  <!-- Left pan -->
+  <path d="M10,55 Q16,50 22,55 L22,60 Q16,65 10,60 Z" fill="url(#gold)" opacity="0.85"/>
+  <!-- Right pan -->
+  <path d="M66,55 Q72,50 78,55 L78,60 Q72,65 66,60 Z" fill="url(#gold)" opacity="0.85"/>
+</svg>
