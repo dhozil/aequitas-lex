@@ -10,8 +10,8 @@
     "preview": "vite preview",
     "lint": "eslint .",
     "format": "prettier --write .",
-    "deploy": "npm run build && npx wrangler --cwd .output/server deploy",
-    "deploy:preview": "npm run build && npx wrangler --cwd .output/server dev"
+    "deploy": "npm run build && npx wrangler pages deploy .output/public",
+    "deploy:preview": "npm run build && npx wrangler pages dev .output/public"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
