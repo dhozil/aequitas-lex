@@ -26,7 +26,7 @@ export async function submitCase(params: {
 }) {
   if (isContractConfigured()) {
     const imagesJson = JSON.stringify(params.images);
-    const result = await chain.submitCaseWithLLM({
+    const result = await chain.submitCase({
       title: params.title,
       description: params.description,
       category: params.category,
