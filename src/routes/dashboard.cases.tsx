@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Search, Trash2, FilePlus2, Loader2, X, ArrowLeft, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { loadAllCases, loadCaseById, deleteCase, CATEGORIES, type CaseRecord, type Severity, type Category } from "@/lib/genlayer-service";
+import { loadMyCases, loadCaseById, deleteCase, CATEGORIES, type CaseRecord, type Severity, type Category } from "@/lib/genlayer-service";
 import { SeverityBadge } from "@/components/severity-badge";
 import { toast } from "sonner";
 
@@ -23,8 +23,8 @@ function CasesPage() {
   const [detailLoading, setDetailLoading] = useState(false);
 
   useEffect(() => {
-    loadAllCases().then(setCases).finally(() => setLoading(false));
-    const onChanged = () => loadAllCases().then(setCases);
+    loadMyCases().then(setCases).finally(() => setLoading(false));
+    const onChanged = () => loadMyCases().then(setCases);
     window.addEventListener("aequitas:cases-changed", onChanged);
     return () => window.removeEventListener("aequitas:cases-changed", onChanged);
   }, []);

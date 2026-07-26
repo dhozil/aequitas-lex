@@ -1,4 +1,4 @@
-import { isContractConfigured } from "./genlayer-client";
+import { isContractConfigured, getConnectedAccount } from "./genlayer-client";
 import * as chain from "./genlayer-client";
 import * as local from "./cases";
 import type { CaseRecord, Category, Severity } from "./cases";
@@ -113,6 +113,55 @@ export async function loadAllCases(): Promise<CaseRecord[]> {
     } catch {
       // fallback to local
     }
+  }
+  return local.loadCases();
+}
+
+export async function loadMyCases(): Promise<CaseRecord[]> {
+  if (isContractConfigured()) {
+    const addr = await getConnectedAccount();
+    if (!addr) return [];
+    try {
+      const ids = await withTimeout(chain.getCasesBySubmitter(addr), 10000);
+      const results = await Promise.all(ids.map((id) =>
+        withTimeout(chain.getCase(id), 10000).catch(() => null)
+      ));
+      return results.filter(Boolean).map((r: any) => ({
+        id: r.id || r.case_id,
+        hash: r.tx_hash,
+        title: r.title,
+        description: r.description,
+        category: r.category as Category,
+        estimatedDamage: r.estimated_damage,
+        location: r.location || undefined,
+        images: r.images || [],
+        createdAt: Number(r.created_at) * 1000,
+        analysis: {
+          summary: r.analysis?.summary || "",
+          reasoning: r.analysis?.reasoning || "",
+          keyFacts: r.analysis?.key_facts || [],
+          evidenceConsistency: r.analysis?.evidence_consistency || 0,
+          riskIndicators: r.analysis?.risk_indicators || [],
+          financialImpact: r.analysis?.financial_impact || "",
+          publicImpact: r.analysis?.public_impact || "",
+          confidence: r.analysis?.confidence || 0,
+        },
+        validators: (r.validators || []).map((v: any) => ({
+          name: v.name,
+          severity: v.severity as Severity,
+          score: v.score,
+          confidence: v.confidence,
+          reasoning: v.reasoning,
+        })),
+        consensus: {
+          severity: r.consensus?.severity as Severity || "Low",
+          score: r.consensus?.score || 0,
+          confidence: r.consensus?.confidence || 0,
+        },
+        txHash: r.tx_hash,
+        blockNumber: r.block_number,
+      }));
+    } catch { return []; }
   }
   return local.loadCases();
 }

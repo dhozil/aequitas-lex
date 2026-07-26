@@ -110,6 +110,14 @@ export function isContractConfigured(): boolean {
   return !!getContractAddress();
 }
 
+export async function getConnectedAccount(): Promise<string | null> {
+  if (typeof window === "undefined" || !(window as any).ethereum) return null;
+  try {
+    const accounts: string[] = await (window as any).ethereum.request({ method: "eth_requestAccounts" });
+    return accounts?.[0]?.toLowerCase() || null;
+  } catch { return null; }
+}
+
 // --- WRITE methods ---
 
 async function writeAndWait(client: ReturnType<typeof createClient>, account: `0x${string}`, fn: string, args: unknown[]): Promise<{ txHash: string; receipt: any }> {
