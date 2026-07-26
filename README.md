@@ -5,7 +5,7 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=white)](https://react.dev/)
 [![TanStack Start](https://img.shields.io/badge/TanStack_Start-1-FF4154?logo=reactquery&logoColor=white)](https://tanstack.com/start/latest)
-[![GenLayer](https://img.shields.io/badge/GenLayer-Bradbury-7B3FE4?logo=genlayer&logoColor=white)](https://genlayer.com/)
+[![GenLayer](https://img.shields.io/badge/GenLayer-StudioNet-7B3FE4?logo=genlayer&logoColor=white)](https://genlayer.com/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4-06B6D4?logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
 [![Cloudflare Pages](https://img.shields.io/badge/Cloudflare_Pages-F38020?logo=cloudflarepages&logoColor=white)](https://pages.cloudflare.com/)
 
@@ -35,7 +35,7 @@ Platform ini hanya memberikan rekomendasi tingkat keparahan (*severity*) yang da
 | **Routing** | TanStack Router (file-based) |
 | **Styling** | Tailwind CSS v4 + OKLCH custom properties |
 | **AI Consensus** | GenLayer – `run_nondet_unsafe` + `exec_prompt` |
-| **Blockchain** | GenLayer Bradbury testnet (chain: 4221) |
+| **Blockchain** | GenLayer StudioNet (chain: 61999) |
 | **Wallet** | EIP-1193 (any EVM wallet) |
 | **UI** | shadcn/ui, Sonner, Lucide, Recharts |
 | **Deploy** | Cloudflare Pages (via Nitro preset `cloudflare-pages`) |
@@ -90,7 +90,7 @@ aequitas-lex/
 
 ## The Intelligent Contract
 
-**`contracts/AequitasLex.py`** — deployed on GenLayer Bradbury testnet.
+**`contracts/AequitasLex.py`** — deployed on GenLayer StudioNet.
 
 ### Consensus Flow
 
@@ -105,7 +105,7 @@ aequitas-lex/
              ▼
      ┌───────────────┐
      │  Validators   │  ← 3 independent LLM re-runs
-     │  (x3)         │  ← score_diff ≤ 5, conf_diff ≤ 10,
+     │  (x3)         │  ← score_diff ≤ 15, conf_diff ≤ 20,
      └───────┬───────┘     ev_diff ≤ 15
              ▼
      ┌───────────────┐
@@ -155,17 +155,17 @@ npm run build
 npm run preview
 ```
 
-### Connect to Bradbury
+### Connect to StudioNet
 
 1. Add network to wallet:
-   - **Network:** Bradbury
-   - **RPC:** `https://bradbury.genlayer.org/`
-   - **Chain ID:** `4221` (hex: `0x107D`)
+   - **Network:** StudioNet
+   - **RPC:** `https://studio.genlayer.com/api`
+   - **Chain ID:** `61999` (hex: `0xF22F`)
    - **Currency:** GEN
 
 2. Set contract address in `.env`:
    ```
-   VITE_AEQUITAS_CONTRACT=0x10d7c33c3709dDd5f701C34b960C0d099F0Ca32d
+   VITE_AEQUITAS_CONTRACT=0x9bA270071D6f2FeEE2eA44DDB0a9EEB4E1437652
    ```
 
 ---

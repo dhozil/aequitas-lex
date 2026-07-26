@@ -325,128 +325,6 @@ class AequitasLex(gl.Contract):
     # ── write ────────────────────────────────────────────
 
     @gl.public.write
-    def submit_case(self, title: str, description: str, category: str,
-                    estimated_damage: int, location: str, images: str) -> str:
-        try:
-            title = (title or "").strip()
-            description = (description or "").strip()
-            category = category or "Other"
-
-            if not title:
-                self.last_error["submit_case"] = "title is required"
-                return "ok"
-            if not description:
-                self.last_error["submit_case"] = "description is required"
-                return "ok"
-            if category not in CATEGORIES:
-                self.last_error["submit_case"] = "invalid category"
-                return "ok"
-
-            try:
-                img_list = json.loads(images) if images else []
-                if not isinstance(img_list, list):
-                    img_list = []
-            except Exception:
-                img_list = []
-            if len(img_list) > MAX_IMAGES:
-                self.last_error["submit_case"] = "max 5 images"
-                return "ok"
-
-            sender = str(gl.message.sender_address)
-            counter = int(self.case_counter)
-            case_id = sender + "_" + str(counter)
-            case_hash = self._make_hash(case_id + title, counter)
-            tx_hash = self._make_hash("tx_" + case_id, counter)
-
-            wc = len(description.split())
-            ec = len(img_list)
-            dmg = max(0, estimated_damage)
-            base = self._compute_base_score(category, wc, ec, dmg)
-
-            detail = _clamp(wc // 3, 0, 30)
-            ev_score = _clamp(ec * 6, 0, 30)
-            evidence_cons = _clamp(55 + ev_score, 0, 100)
-            confidence = _clamp(60 + _clamp(wc // 4, 0, 35), 0, 100)
-
-            analysis = {
-                "summary": (
-                    f"A reported {category.lower()} incident titled \"{title}\""
-                    + (f" occurring at {location}," if location else ",")
-                    + f" with estimated damages of ${dmg:,}. "
-                    + ("Narrative provides sufficient context for structured reasoning."
-                       if wc >= 15 else "Narrative brevity limits certainty.")
-                ),
-                "key_facts": [
-                    f"Category: {category}",
-                    f"Estimated financial exposure: ${dmg:,}",
-                    f"Supporting evidence artifacts: {ec}",
-                    f"Reported location: {location}" if location else "Location undisclosed",
-                    f"Description length: {wc} words",
-                ],
-                "evidence_consistency": evidence_cons,
-                "risk_indicators": RISK_POOL.get(category, RISK_POOL["Other"]),
-                "financial_impact": "Significant" if dmg > 50000 else ("Moderate" if dmg > 5000 else "Limited"),
-                "public_impact": (
-                    "High visibility, community concern likely" if CAT_WEIGHTS.get(category, 45) > 60 else
-                    "Localized impact" if CAT_WEIGHTS.get(category, 45) > 40 else
-                    "Minor public footprint"),
-                "confidence": confidence,
-            }
-
-            validators = []
-            for i in range(3):
-                j = ((_fnv1a(title + "|" + description + "|" + category + "_" + str(i)) % 19) - 9)
-                vs = _clamp(base + j, 1, 100)
-                sev = _compute_severity(vs)
-                vc = _clamp(70 + (_fnv1a(title + "_conf_" + str(i)) % 26), 0, 100)
-                validators.append({
-                    "name": VALIDATORS[i],
-                    "severity": sev,
-                    "score": vs,
-                    "confidence": vc,
-                    "reasoning": (
-                        f"Assessment via {VALIDATOR_LENS[i]}: "
-                        f"the {category.lower()} report exhibits indicators "
-                        f"consistent with a {sev.lower()} severity classification."
-                    ),
-                })
-
-            avg_s = sum(v["score"] for v in validators) // len(validators)
-            avg_c = sum(v["confidence"] for v in validators) // len(validators)
-
-            record = {
-                "id": case_id,
-                "case_hash": case_hash,
-                "title": title,
-                "description": description,
-                "category": category,
-                "estimated_damage": dmg,
-                "location": location,
-                "images": img_list[:MAX_IMAGES],
-                "created_at": _now_ts(),
-                "analysis": analysis,
-                "validators": validators,
-                "consensus": {
-                    "severity": _compute_severity(avg_s),
-                    "score": avg_s,
-                    "confidence": avg_c,
-                },
-                "tx_hash": tx_hash,
-                "block_number": 8000000 + (_fnv1a(case_id) % 500000),
-                "submitter": sender,
-            }
-
-            self.cases[case_id] = json.dumps(record)
-            self._save_case_id(case_id)
-            self.case_counter = bigint(counter + 1)
-            self.last_error["submit_case"] = ""
-
-            return "ok"
-        except Exception as e:
-            self.last_error["submit_case"] = str(e)[:200]
-            return "ok"
-
-    @gl.public.write
     def submit_case_with_llm(self, title: str, description: str, category: str,
                              estimated_damage: int, location: str, images: str) -> str:
         try:
@@ -520,7 +398,7 @@ class AequitasLex(gl.Contract):
                 score_diff = abs(leader["severity_score"] - validator_data["severity_score"])
                 conf_diff = abs(leader["confidence"] - validator_data["confidence"])
                 ev_diff = abs(leader["evidence_consistency"] - validator_data["evidence_consistency"])
-                return score_diff <= 5 and conf_diff <= 10 and ev_diff <= 15
+                return score_diff <= 15 and conf_diff <= 20 and ev_diff <= 25
 
             import math
             llm_raw = None

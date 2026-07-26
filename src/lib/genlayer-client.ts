@@ -1,5 +1,5 @@
 import { createClient } from "genlayer-js";
-import { testnetBradbury } from "genlayer-js/chains";
+import { studionet } from "genlayer-js/chains";
 
 export type ConsensusResult = {
   severity: "Low" | "Medium" | "High" | "Critical";
@@ -66,30 +66,30 @@ function getReadClient() {
   // Use MetaMask provider when available (browser) to avoid CORS issues
   const provider = typeof window !== "undefined" ? (window as any).ethereum : undefined;
   if (provider) {
-    _readClient = createClient({ chain: testnetBradbury, provider });
+    _readClient = createClient({ chain: studionet, provider });
   } else {
-    _readClient = createClient({ chain: testnetBradbury });
+    _readClient = createClient({ chain: studionet });
   }
   return _readClient;
 }
 
-const BRADBURY_CHAIN_ID = "0x107d";
+const STUDIONET_CHAIN_ID = "0xf22f";
 
 async function ensureCorrectNetwork(provider: any) {
   const chainId = await provider.request({ method: "eth_chainId" });
-  if (chainId?.toLowerCase() === BRADBURY_CHAIN_ID) return;
+  if (chainId?.toLowerCase() === STUDIONET_CHAIN_ID) return;
   try {
-    await provider.request({ method: "wallet_switchEthereumChain", params: [{ chainId: BRADBURY_CHAIN_ID }] });
+    await provider.request({ method: "wallet_switchEthereumChain", params: [{ chainId: STUDIONET_CHAIN_ID }] });
   } catch (e: any) {
     if (e.code === 4902) {
       await provider.request({
         method: "wallet_addEthereumChain",
         params: [{
-          chainId: BRADBURY_CHAIN_ID,
-          chainName: "GenLayer Bradbury Testnet",
-          rpcUrls: ["https://rpc-bradbury.genlayer.com"],
+          chainId: STUDIONET_CHAIN_ID,
+          chainName: "GenLayer StudioNet",
+          rpcUrls: ["https://studio.genlayer.com/api"],
           nativeCurrency: { name: "GEN", symbol: "GEN", decimals: 18 },
-          blockExplorerUrls: ["https://explorer.genlayer.com"],
+          blockExplorerUrls: ["https://genlayer-explorer.vercel.app"],
         }],
       });
     } else throw e;
@@ -181,12 +181,12 @@ async function writeSubmit(fn: string, params: {
   if (!provider) throw new Error("No EVM wallet detected.");
   const accounts: `0x${string}`[] = await provider.request({ method: "eth_requestAccounts" });
   if (!accounts?.[0]) throw new Error("No wallet connected");
-  const client = createClient({ chain: testnetBradbury, provider, account: accounts[0] as any });
+  const client = createClient({ chain: studionet, provider, account: accounts[0] as any });
   try {
-    await (client as any).connect("testnetBradbury");
+    await (client as any).connect("studionet");
   } catch {
     await ensureCorrectNetwork(provider);
-    (client as any).chain = testnetBradbury;
+    (client as any).chain = studionet;
   }
   const { txHash, receipt } = await writeAndWait(client, accounts[0], fn, [params.title, params.description, params.category, params.estimatedDamage, params.location || "", params.images]);
 
@@ -233,11 +233,6 @@ async function writeSubmit(fn: string, params: {
   throw new Error("Transaction accepted but case not found on contract");
 }
 
-export async function submitCase(params: {
-  title: string; description: string; category: string; estimatedDamage: number; location?: string; images: string;
-}): Promise<SubmitResult> {
-  return writeSubmit("submit_case", params);
-}
 
 export async function submitCaseWithLLM(params: {
   title: string; description: string; category: string; estimatedDamage: number; location?: string; images: string;
