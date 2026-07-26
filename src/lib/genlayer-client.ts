@@ -181,13 +181,8 @@ async function writeSubmit(fn: string, params: {
   if (!provider) throw new Error("No EVM wallet detected.");
   const accounts: `0x${string}`[] = await provider.request({ method: "eth_requestAccounts" });
   if (!accounts?.[0]) throw new Error("No wallet connected");
+  await ensureCorrectNetwork(provider);
   const client = createClient({ chain: studionet, provider, account: accounts[0] as any });
-  try {
-    await (client as any).connect("studionet");
-  } catch {
-    await ensureCorrectNetwork(provider);
-    (client as any).chain = studionet;
-  }
   const { txHash, receipt } = await writeAndWait(client, accounts[0], fn, [params.title, params.description, params.category, params.estimatedDamage, params.location || "", params.images]);
 
   // Poll contract state and check for errors
