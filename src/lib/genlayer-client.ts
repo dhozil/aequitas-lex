@@ -63,10 +63,13 @@ let _readClient: ReturnType<typeof createClient> | null = null;
 
 function getReadClient() {
   if (_readClient) return _readClient;
-  // Use MetaMask provider when available (browser) to avoid CORS issues
   const provider = typeof window !== "undefined" ? (window as any).ethereum : undefined;
   if (provider) {
-    _readClient = createClient({ chain: studionet, provider });
+    try {
+      _readClient = createClient({ chain: studionet, provider });
+    } catch {
+      _readClient = createClient({ chain: studionet });
+    }
   } else {
     _readClient = createClient({ chain: studionet });
   }
