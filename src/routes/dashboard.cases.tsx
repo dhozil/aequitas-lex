@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Search, Trash2, FilePlus2, Loader2, X, ArrowLeft, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { loadMyCases, loadCaseById, deleteCase, CATEGORIES, type CaseRecord, type Severity, type Category } from "@/lib/genlayer-service";
+import { loadMyCases, loadAllCases, loadCaseById, deleteCase, CATEGORIES, type CaseRecord, type Severity, type Category } from "@/lib/genlayer-service";
 import { SeverityBadge } from "@/components/severity-badge";
 import { toast } from "sonner";
 
@@ -21,13 +21,15 @@ function CasesPage() {
   const [detailId, setDetailId] = useState<string | null>(null);
   const [detail, setDetail] = useState<CaseRecord | null | undefined>(undefined);
   const [detailLoading, setDetailLoading] = useState(false);
+  const [showAll, setShowAll] = useState(false);
 
+  const load = () => (showAll ? loadAllCases() : loadMyCases()).then(setCases).finally(() => setLoading(false));
+  useEffect(() => { load(); }, [showAll]);
   useEffect(() => {
-    loadMyCases().then(setCases).finally(() => setLoading(false));
-    const onChanged = () => loadMyCases().then(setCases);
+    const onChanged = () => load();
     window.addEventListener("aequitas:cases-changed", onChanged);
     return () => window.removeEventListener("aequitas:cases-changed", onChanged);
-  }, []);
+  }, [showAll]);
 
   useEffect(() => {
     if (!detailId) { setDetail(undefined); return; }
@@ -54,8 +56,15 @@ function CasesPage() {
     <div className="space-y-6">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <div className="text-xs uppercase tracking-[0.3em] text-gold">My Cases</div>
+          <div className="text-xs uppercase tracking-[0.3em] text-gold">{showAll ? "All Cases" : "My Cases"}</div>
           <h1 className="mt-2 font-serif text-4xl text-marble">Case ledger</h1>
+        </div>
+        <div className="flex items-center gap-2 rounded-lg border border-gold/20 bg-onyx/40 px-3 py-1.5 text-xs">
+          <span className={showAll ? "text-muted-foreground" : "text-gold font-medium"}>Mine</span>
+          <button onClick={() => setShowAll((p) => !p)} className={`relative h-5 w-9 rounded-full transition-colors ${showAll ? "bg-gold" : "bg-muted"}`}>
+            <span className={`absolute left-0.5 top-0.5 h-4 w-4 rounded-full bg-onyx transition-transform ${showAll ? "translate-x-4" : ""}`} />
+          </button>
+          <span className={showAll ? "text-gold font-medium" : "text-muted-foreground"}>All</span>
         </div>
         <Button asChild className="bg-gradient-to-b from-[oklch(0.88_0.09_85)] to-[oklch(0.7_0.14_75)] text-onyx hover:opacity-95">
           <Link to="/dashboard/create"><FilePlus2 className="mr-2 h-4 w-4" /> New case</Link>
