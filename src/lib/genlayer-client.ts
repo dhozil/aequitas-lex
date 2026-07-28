@@ -238,6 +238,25 @@ export async function submitCaseWithLLM(params: {
   return writeSubmit("submit_case_with_llm", params);
 }
 
+export async function deleteCase(caseId: string): Promise<void> {
+  if (!getContractAddress()) throw new Error("Contract address not configured");
+  const provider = getProvider();
+  if (!provider) throw new Error("No EVM wallet detected.");
+  const accounts: `0x${string}`[] = await provider.request({ method: "eth_requestAccounts" });
+  if (!accounts?.[0]) throw new Error("No wallet connected");
+  await ensureCorrectNetwork(provider);
+  const client = createClient({ chain: studionet, provider, account: accounts[0] as any });
+  await writeAndWait(client, accounts[0], "delete_case", [caseId]);
+  // Check for contract-side error
+  const readClient = getReadClient();
+  const errMsg: string = await readClient.readContract({
+    address: getContractAddress() as `0x${string}`,
+    functionName: "get_last_error",
+    args: ["delete_case"],
+  }) as string;
+  if (errMsg) throw new Error(errMsg);
+}
+
 // --- READ methods ---
 
 export async function getCase(caseId: string): Promise<CaseRecord | null> {

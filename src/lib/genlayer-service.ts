@@ -45,6 +45,12 @@ export async function submitCase(params: {
     location: params.location,
     imagesCount: params.images.length,
   });
+  // Label simulated validators so users know these are not on-chain consensus
+  const labeledValidators = validators.map((v) => ({
+    ...v,
+    name: "Simulated " + v.name,
+    reasoning: "[Local simulation] " + v.reasoning,
+  }));
   const id = crypto.randomUUID();
   const rec: CaseRecord = {
     id,
@@ -56,9 +62,9 @@ export async function submitCase(params: {
     location: params.location || undefined,
     images: params.images,
     createdAt: Date.now(),
-    analysis, validators, consensus,
-    txHash: local.makeHash("tx-" + id),
-    blockNumber: 8_000_000 + Math.floor(Math.random() * 500_000),
+    analysis, validators: labeledValidators, consensus,
+    txHash: "SIMULATED_" + local.makeHash("tx-" + id),
+    blockNumber: 0,
   };
   local.addCase(rec);
   return {
@@ -69,50 +75,46 @@ export async function submitCase(params: {
   } as const;
 }
 
-// === READ (with localStorage fallback) ===
+// === READ ===
 
 export async function loadAllCases(): Promise<CaseRecord[]> {
   if (isContractConfigured()) {
-    try {
-      const records = await withTimeout(chain.getCasesPaginated(0, 100), 10000);
-      return records.map((r) => ({
-        id: (r as any).id || r.case_id,
-        hash: r.tx_hash,
-        title: r.title,
-        description: r.description,
-        category: r.category as Category,
-        estimatedDamage: r.estimated_damage,
-        location: r.location || undefined,
-        images: r.images || [],
-        createdAt: Number(r.created_at) * 1000,
-        analysis: {
-          summary: r.analysis?.summary || "",
-          reasoning: r.analysis?.reasoning || "",
-          keyFacts: r.analysis?.key_facts || [],
-          evidenceConsistency: r.analysis?.evidence_consistency || 0,
-          riskIndicators: r.analysis?.risk_indicators || [],
-          financialImpact: r.analysis?.financial_impact || "",
-          publicImpact: r.analysis?.public_impact || "",
-          confidence: r.analysis?.confidence || 0,
-        },
-        validators: (r.validators || []).map((v) => ({
-          name: v.name,
-          severity: v.severity as Severity,
-          score: v.score,
-          confidence: v.confidence,
-          reasoning: v.reasoning,
-        })),
-        consensus: {
-          severity: r.consensus?.severity as Severity || "Low",
-          score: r.consensus?.score || 0,
-          confidence: r.consensus?.confidence || 0,
-        },
-        txHash: r.tx_hash || "",
-        blockNumber: Number(r.block_number) || 0,
-      }));
-    } catch {
-      // fallback to local
-    }
+    const records = await withTimeout(chain.getCasesPaginated(0, 100), 10000);
+    return records.map((r) => ({
+      id: (r as any).id || r.case_id,
+      hash: r.tx_hash,
+      title: r.title,
+      description: r.description,
+      category: r.category as Category,
+      estimatedDamage: r.estimated_damage,
+      location: r.location || undefined,
+      images: r.images || [],
+      createdAt: Number(r.created_at) * 1000,
+      analysis: {
+        summary: r.analysis?.summary || "",
+        reasoning: r.analysis?.reasoning || "",
+        keyFacts: r.analysis?.key_facts || [],
+        evidenceConsistency: r.analysis?.evidence_consistency || 0,
+        riskIndicators: r.analysis?.risk_indicators || [],
+        financialImpact: r.analysis?.financial_impact || "",
+        publicImpact: r.analysis?.public_impact || "",
+        confidence: r.analysis?.confidence || 0,
+      },
+      validators: (r.validators || []).map((v) => ({
+        name: v.name,
+        severity: v.severity as Severity,
+        score: v.score,
+        confidence: v.confidence,
+        reasoning: v.reasoning,
+      })),
+      consensus: {
+        severity: r.consensus?.severity as Severity || "Low",
+        score: r.consensus?.score || 0,
+        confidence: r.consensus?.confidence || 0,
+      },
+      txHash: r.tx_hash || "",
+      blockNumber: Number(r.block_number) || 0,
+    }));
   }
   return local.loadCases();
 }
@@ -121,99 +123,101 @@ export async function loadMyCases(): Promise<CaseRecord[]> {
   if (isContractConfigured()) {
     const addr = await getConnectedAccount();
     if (!addr) return [];
-    try {
-      const ids = await withTimeout(chain.getCasesBySubmitter(addr), 10000);
-      const results = await Promise.all(ids.map((id) =>
-        withTimeout(chain.getCase(id), 10000).catch(() => null)
-      ));
-      return results.filter(Boolean).map((r: any) => ({
-        id: r.id || r.case_id,
-        hash: r.tx_hash,
-        title: r.title,
-        description: r.description,
-        category: r.category as Category,
-        estimatedDamage: r.estimated_damage,
-        location: r.location || undefined,
-        images: r.images || [],
-        createdAt: Number(r.created_at) * 1000,
-        analysis: {
-          summary: r.analysis?.summary || "",
-          reasoning: r.analysis?.reasoning || "",
-          keyFacts: r.analysis?.key_facts || [],
-          evidenceConsistency: r.analysis?.evidence_consistency || 0,
-          riskIndicators: r.analysis?.risk_indicators || [],
-          financialImpact: r.analysis?.financial_impact || "",
-          publicImpact: r.analysis?.public_impact || "",
-          confidence: r.analysis?.confidence || 0,
-        },
-        validators: (r.validators || []).map((v: any) => ({
-          name: v.name,
-          severity: v.severity as Severity,
-          score: v.score,
-          confidence: v.confidence,
-          reasoning: v.reasoning,
-        })),
-        consensus: {
-          severity: r.consensus?.severity as Severity || "Low",
-          score: r.consensus?.score || 0,
-          confidence: r.consensus?.confidence || 0,
-        },
-        txHash: r.tx_hash,
-        blockNumber: r.block_number,
-      }));
-    } catch { return []; }
+    const ids = await withTimeout(chain.getCasesBySubmitter(addr), 10000);
+    const results = await Promise.all(ids.map((id) =>
+      withTimeout(chain.getCase(id), 10000).catch(() => null)
+    ));
+    return results.filter(Boolean).map((r: any) => ({
+      id: r.id || r.case_id,
+      hash: r.tx_hash,
+      title: r.title,
+      description: r.description,
+      category: r.category as Category,
+      estimatedDamage: r.estimated_damage,
+      location: r.location || undefined,
+      images: r.images || [],
+      createdAt: Number(r.created_at) * 1000,
+      analysis: {
+        summary: r.analysis?.summary || "",
+        reasoning: r.analysis?.reasoning || "",
+        keyFacts: r.analysis?.key_facts || [],
+        evidenceConsistency: r.analysis?.evidence_consistency || 0,
+        riskIndicators: r.analysis?.risk_indicators || [],
+        financialImpact: r.analysis?.financial_impact || "",
+        publicImpact: r.analysis?.public_impact || "",
+        confidence: r.analysis?.confidence || 0,
+      },
+      validators: (r.validators || []).map((v: any) => ({
+        name: v.name,
+        severity: v.severity as Severity,
+        score: v.score,
+        confidence: v.confidence,
+        reasoning: v.reasoning,
+      })),
+      consensus: {
+        severity: r.consensus?.severity as Severity || "Low",
+        score: r.consensus?.score || 0,
+        confidence: r.consensus?.confidence || 0,
+      },
+      txHash: r.tx_hash,
+      blockNumber: r.block_number,
+    }));
   }
   return local.loadCases();
 }
 
 export async function loadCaseById(id: string): Promise<CaseRecord | undefined> {
   if (isContractConfigured()) {
-    try {
-      const r = await withTimeout(chain.getCase(id), 10000);
-      if (!r) return undefined;
-      return {
-        id: (r as any).id || r.case_id,
-        hash: r.tx_hash,
-        title: r.title,
-        description: r.description,
-        category: r.category as Category,
-        estimatedDamage: r.estimated_damage,
-        location: r.location || undefined,
-        images: r.images || [],
-        createdAt: Number(r.created_at) * 1000,
-        analysis: {
-          summary: r.analysis?.summary || "",
-          reasoning: r.analysis?.reasoning || "",
-          keyFacts: r.analysis?.key_facts || [],
-          evidenceConsistency: r.analysis?.evidence_consistency || 0,
-          riskIndicators: r.analysis?.risk_indicators || [],
-          financialImpact: r.analysis?.financial_impact || "",
-          publicImpact: r.analysis?.public_impact || "",
-          confidence: r.analysis?.confidence || 0,
-        },
-        validators: (r.validators || []).map((v) => ({
-          name: v.name,
-          severity: v.severity as Severity,
-          score: v.score,
-          confidence: v.confidence,
-          reasoning: v.reasoning,
-        })),
-        consensus: {
-          severity: r.consensus?.severity as Severity || "Low",
-          score: r.consensus?.score || 0,
-          confidence: r.consensus?.confidence || 0,
-        },
-        txHash: r.tx_hash || "",
-        blockNumber: Number(r.block_number) || 0,
-      };
-    } catch {
-      return local.getCase(id);
-    }
+    const r = await withTimeout(chain.getCase(id), 10000);
+    if (!r) return undefined;
+    return {
+      id: (r as any).id || r.case_id,
+      hash: r.tx_hash,
+      title: r.title,
+      description: r.description,
+      category: r.category as Category,
+      estimatedDamage: r.estimated_damage,
+      location: r.location || undefined,
+      images: r.images || [],
+      createdAt: Number(r.created_at) * 1000,
+      analysis: {
+        summary: r.analysis?.summary || "",
+        reasoning: r.analysis?.reasoning || "",
+        keyFacts: r.analysis?.key_facts || [],
+        evidenceConsistency: r.analysis?.evidence_consistency || 0,
+        riskIndicators: r.analysis?.risk_indicators || [],
+        financialImpact: r.analysis?.financial_impact || "",
+        publicImpact: r.analysis?.public_impact || "",
+        confidence: r.analysis?.confidence || 0,
+      },
+      validators: (r.validators || []).map((v) => ({
+        name: v.name,
+        severity: v.severity as Severity,
+        score: v.score,
+        confidence: v.confidence,
+        reasoning: v.reasoning,
+      })),
+      consensus: {
+        severity: r.consensus?.severity as Severity || "Low",
+        score: r.consensus?.score || 0,
+        confidence: r.consensus?.confidence || 0,
+      },
+      txHash: r.tx_hash || "",
+      blockNumber: Number(r.block_number) || 0,
+    };
   }
   return local.getCase(id);
 }
 
-export { deleteCase, loadProfile, saveProfile } from "./cases";
+export async function deleteCase(id: string) {
+  if (isContractConfigured()) {
+    await chain.deleteCase(id);
+  } else {
+    local.deleteCase(id);
+  }
+}
+
+export { loadProfile, saveProfile } from "./cases";
 export type { Profile } from "./cases";
 
 // --- Wallet ---

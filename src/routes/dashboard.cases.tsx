@@ -46,11 +46,17 @@ function CasesPage() {
     (q === "" || c.title.toLowerCase().includes(q.toLowerCase()) || c.description.toLowerCase().includes(q.toLowerCase()) || c.hash.includes(q))
   ), [cases, q, sev, cat]);
 
-  const remove = (id: string) => {
-    deleteCase(id);
-    if (detailId === id) setDetailId(null);
-    toast.success("Case removed");
+  const remove = async (id: string) => {
+    try {
+      await deleteCase(id);
+      if (detailId === id) setDetailId(null);
+      toast.success("Case removed");
+    } catch (e: any) {
+      toast.error(e?.message || "Failed to delete case");
+    }
   };
+
+  const isSimulated = detail?.txHash?.startsWith("SIMULATED_");
 
   return (
     <div className="space-y-6">
@@ -176,6 +182,9 @@ function CasesPage() {
                       </div>
                       <div className="rounded-xl border border-border/60 bg-onyx/40 p-5">
                         <div className="text-xs uppercase tracking-widest text-gold">On-chain record</div>
+                        {isSimulated && (
+                          <div className="mt-2 rounded bg-amber-900/30 px-2 py-1 text-xs text-amber-400">Local simulation — not on chain</div>
+                        )}
                         <div className="mt-3 space-y-2 text-xs">
                           <div className="flex items-center justify-between gap-3">
                             <span className="text-muted-foreground">Case hash</span>
@@ -257,7 +266,7 @@ function CasesPage() {
                 <div className="panel rounded-2xl p-6">
                   <div className="flex items-center justify-between">
                     <h2 className="font-serif text-2xl text-marble">Validator Consensus</h2>
-                    <span className="text-xs text-muted-foreground">3 independent AI validators</span>
+                    <span className="text-xs text-muted-foreground">{isSimulated ? "Simulated (no contract)" : "3 independent AI validators"}</span>
                   </div>
                   <div className="mt-6 grid gap-4 lg:grid-cols-3">
                     {detail.validators.map((v) => (
