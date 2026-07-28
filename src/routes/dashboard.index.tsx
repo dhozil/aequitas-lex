@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { FilePlus2, FolderOpen, TrendingUp, Sparkles, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -12,6 +12,7 @@ export const Route = createFileRoute("/dashboard/")({
 function Overview() {
   const [cases, setCases] = useState<CaseRecord[]>([]);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
   useEffect(() => {
     loadAllCases().then(setCases).finally(() => setLoading(false));
     const onChanged = () => loadAllCases().then(setCases);
@@ -79,7 +80,7 @@ function Overview() {
         ) : (
           <div className="divide-y divide-border/60">
             {cases.slice(0, 5).map((c) => (
-              <Link key={c.id} to="/dashboard/cases/$id" params={{ id: c.id }} className="flex items-center justify-between gap-4 py-3 transition-colors hover:bg-accent/30 rounded-lg px-3 -mx-3">
+              <div key={c.id} onClick={() => navigate({ to: '/dashboard/cases', search: { detail: c.id } })} className="flex cursor-pointer items-center justify-between gap-4 py-3 transition-colors hover:bg-accent/30 rounded-lg px-3 -mx-3">
                 <div className="min-w-0">
                   <div className="truncate font-serif text-lg text-marble">{c.title}</div>
                   <div className="text-xs text-muted-foreground">{c.category} · {new Date(c.createdAt).toLocaleString()}</div>
@@ -91,7 +92,7 @@ function Overview() {
                   </div>
                   <SeverityBadge severity={c.consensus.severity} />
                 </div>
-              </Link>
+              </div>
             ))}
           </div>
         )}

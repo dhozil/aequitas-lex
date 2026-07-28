@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { Search, Trash2, FilePlus2, Loader2, X, ArrowLeft, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -8,11 +8,16 @@ import { SeverityBadge } from "@/components/severity-badge";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/dashboard/cases")({
+  validateSearch: (search: Record<string, unknown>) => ({
+    detail: search.detail as string | undefined,
+  }),
   head: () => ({ meta: [{ title: "My Cases — Aequitas Lex" }] }),
   component: CasesPage,
 });
 
 function CasesPage() {
+  const { detail: searchDetail } = Route.useSearch();
+  const navigate = useNavigate();
   const [cases, setCases] = useState<CaseRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [q, setQ] = useState("");
@@ -25,6 +30,19 @@ function CasesPage() {
 
   const load = () => (showAll ? loadAllCases() : loadMyCases()).then(setCases).finally(() => setLoading(false));
   useEffect(() => { load(); }, [showAll]);
+
+  // Open detail overlay from search param (e.g. navigated from dashboard home)
+  useEffect(() => {
+    if (searchDetail && searchDetail !== detailId) {
+      setDetailId(searchDetail);
+      setShowAll(true); // ensure we can see other people's cases
+    }
+  }, [searchDetail]);
+
+  const closeDetail = () => {
+    setDetailId(null);
+    navigate({ to: '/dashboard/cases', search: {} });
+  };
   useEffect(() => {
     const onChanged = () => load();
     window.addEventListener("aequitas:cases-changed", onChanged);
@@ -49,7 +67,7 @@ function CasesPage() {
   const remove = async (id: string) => {
     try {
       await deleteCase(id);
-      if (detailId === id) setDetailId(null);
+      if (detailId === id) closeDetail();
       load();
       toast.success("Case removed");
     } catch (e: any) {
@@ -130,7 +148,7 @@ function CasesPage() {
 
       {/* Detail overlay */}
       {detailId && (
-        <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/60 p-4 pt-12 backdrop-blur-sm" onClick={() => setDetailId(null)}>
+        <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/60 p-4 pt-12 backdrop-blur-sm" onClick={closeDetail}>
           <div className="w-full max-w-3xl" onClick={(e) => e.stopPropagation()}>
             {detailLoading ? (
               <div className="panel flex items-center justify-center gap-3 rounded-2xl p-12 text-muted-foreground">
@@ -140,11 +158,11 @@ function CasesPage() {
               <div className="panel rounded-2xl p-10 text-center">
                 <div className="font-serif text-2xl text-marble">Case not found</div>
                 <p className="mt-2 text-sm text-muted-foreground">This case may have been deleted.</p>
-                <Button className="mt-4" onClick={() => setDetailId(null)}>Back to cases</Button>
+                <Button className="mt-4" onClick={closeDetail}>Back to cases</Button>
               </div>
             ) : (
               <div className="space-y-6">
-                <button onClick={() => setDetailId(null)} className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-gold">
+                <button onClick={closeDetail} className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-gold">
                   <ArrowLeft className="h-3 w-3" /> All cases
                 </button>
 
