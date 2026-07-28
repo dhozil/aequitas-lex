@@ -156,7 +156,7 @@ function CasesPage() {
                     </div>
                     <div className="flex items-center gap-3">
                       <SeverityBadge severity={detail.consensus.severity} className="text-sm px-3 py-1" />
-                      <Button variant="outline" size="sm" onClick={() => { deleteCase(detail.id); setDetailId(null); toast.success("Case removed"); }} className="border-destructive/40 text-destructive hover:bg-destructive/10">
+                      <Button variant="outline" size="sm" onClick={async (e) => { try { await deleteCase(detail.id); setDetailId(null); toast.success("Case removed"); } catch (err: any) { toast.error(err?.message || "Failed to delete case"); } }} className="border-destructive/40 text-destructive hover:bg-destructive/10">
                         <Trash2 className="mr-1.5 h-3.5 w-3.5" /> Delete
                       </Button>
                     </div>
